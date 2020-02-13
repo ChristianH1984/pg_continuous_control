@@ -19,8 +19,7 @@ class PiNetwork(nn.Module):
 			('relu1', nn.ReLU()),
 			('fc2', nn.Linear(128, 128)),
 			('relu2', nn.ReLU()),
-			('logits', nn.Linear(128, 4))  # ,
-			# ('tanh', nn.Tanh())
+			('logits', nn.Linear(128, 4))
 		]))
 
 		self.model_sigma = nn.Sequential(OrderedDict([
