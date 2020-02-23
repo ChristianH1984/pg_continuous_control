@@ -3,12 +3,12 @@ from torch import optim
 import torch.nn as nn
 from collections import OrderedDict
 import copy
-
+WEIGHT_DECAY = 0.0 #0.0001
 
 class QNetwork(nn.Module):
 	"""Actor (Policy) Model."""
 
-	def __init__(self, state_size, action_size, layer_size1=512, layer_size2=256, lr=1e-5, seed=1337):
+	def __init__(self, state_size, action_size, layer_size1=128, layer_size2=64, lr=1e-5, seed=1337):
 		"""Initialize parameters and build model.
 		Params
 		======
@@ -34,28 +34,13 @@ class QNetwork(nn.Module):
 		]))
 
 		self.loss = nn.MSELoss()
-		self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
+		self.optimizer = optim.Adam(self.model.parameters(), lr=lr,  weight_decay=WEIGHT_DECAY)
 
 	def forward(self, state):
 		"""Build a network that maps state -> action values."""
 		return self.model.forward(state)
 
-	def optimize(self, y_orig, y_target, weights=None):
-		if weights is not None:
-			loss = weighted_mse_loss(y_orig, y_target, weights)
-		else:
-			loss = self.loss(y_orig, y_target)
-		self.optimizer.zero_grad()
-		loss.backward()
-		self.optimizer.step()
-
 	def clone(self):
 		qnetwork_clone = QNetwork(self.state_size, self.action_size)
 		qnetwork_clone.model = copy.deepcopy(self.model)
 		return qnetwork_clone
-
-def weighted_mse_loss(input, target, weights):
-	out = (input - target) ** 2
-	out = out * weights.expand_as(out)
-	loss = out.mean(0)
-	return loss
