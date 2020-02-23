@@ -3,7 +3,7 @@ from torch import optim
 import torch.nn as nn
 from collections import OrderedDict
 import copy
-WEIGHT_DECAY = 0.0 #0.0001
+
 
 class QNetwork(nn.Module):
 	"""Actor (Policy) Model."""
@@ -33,7 +33,7 @@ class QNetwork(nn.Module):
 		]))
 
 		self.loss = nn.MSELoss()
-		self.optimizer = optim.Adam(self.model.parameters(), lr=lr,  weight_decay=WEIGHT_DECAY)
+		self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
 
 	def forward(self, state):
 		"""Build a network that maps state -> action values."""
