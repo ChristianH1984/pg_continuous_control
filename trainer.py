@@ -25,7 +25,7 @@ class Trainer(object):
 				score += reward
 
 			scores.append(score)
-			if np.mean(scores[-100:]) > 13:
+			if np.mean(scores[-100:]) > 30:
 				print("\nProblem solved after {0} episodes".format(i))
 				return scores
 			print('\rEpisode {}\tAverage Score: {:.2f},   {:.2f}'.format(i, np.mean(scores[-20:]), score), end="")
