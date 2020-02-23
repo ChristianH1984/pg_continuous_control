@@ -25,11 +25,11 @@ class BaseAgent:
 		self.tau = tau
 		self.batch_size = batch_size
 		self.update_every = update_every
-		self.critic_local = critic#.to(device)
-		self.critic_target = critic.clone()#.to(device)
+		self.critic_local = critic
+		self.critic_target = critic.clone()
 
-		self.actor_local = actor#.to(device)
-		self.actor_target = actor.clone()#.to(device)
+		self.actor_local = actor
+		self.actor_target = actor.clone()
 
 		self.ou_noise = ou_noise
 
@@ -67,11 +67,6 @@ class BaseAgent:
 		actions = actions.cpu().data.numpy()
 		actions += self.ou_noise.sample().reshape(-1, 4)
 		return np.clip(actions, -1, 1)
-		## Epsilon-greedy action selection
-	#	if random.random() > eps:
-	#		return np.argmax(action_values.cpu().data.numpy()).astype(int)
-		#else:
-		#	return random.choice(np.arange(action_size)).astype(int)
 
 	def learn(self, experiences):
 		"""Update value parameters using given batch of experience tuples.
@@ -118,6 +113,7 @@ class ActorCriticAgent(BaseAgent):
 
 		self.critic_local.optimizer.zero_grad()
 		critic_error.backward()
+		torch.nn.utils.clip_grad_norm(self.critic_local.parameters(), 1)
 		self.critic_local.optimizer.step()
 
 		actions = self.actor_local(states)
