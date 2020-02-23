@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class DQN(object):
+class Trainer(object):
 	def __init__(self, env, agent):
 		self.env = env
 		self.agent = agent
