@@ -1,16 +1,13 @@
 import numpy as np
-import random
 import torch
-import copy
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 device = 'cpu'
-SIGMA_DECAY = 0.995
-SIGMA_MIN = 0.0001
+
 
 class BaseAgent:
 	"""Interacts with and learns from the environment."""
 
-	def __init__(self, gamma, tau, batch_size, update_every, actor, critic, memory):
+	def __init__(self, gamma, tau, batch_size, update_every, actor, critic, memory, ou_noise):
 		"""Initialize an Agent object.
 
 		Params
@@ -34,7 +31,7 @@ class BaseAgent:
 		self.actor_local = actor#.to(device)
 		self.actor_target = actor.clone()#.to(device)
 
-		self.ou_noise = OUNoise(4, 1, 1337)
+		self.ou_noise = ou_noise
 
 		# Replay memory
 		self.memory = memory
@@ -135,28 +132,3 @@ class ActorCriticAgent(BaseAgent):
 
 	def reset(self):
 		self.ou_noise.reset()
-
-
-class OUNoise:
-    """Ornstein-Uhlenbeck process."""
-
-    def __init__(self, action_size, num_agents, seed, mu=0., theta=0.05, sigma=0.2):
-        """Initialize parameters and noise process."""
-        self.mu = mu * np.ones((num_agents, action_size))
-        self.theta = theta
-        self.sigma = sigma
-        self.seed = random.seed(seed)
-        self.state = copy.copy(self.mu)
-
-    def reset(self):
-        """Reset the internal state (= noise) to mean (mu)."""
-        self.state = copy.copy(self.mu)
-        if self.sigma > SIGMA_MIN:
-            self.sigma *= SIGMA_DECAY
-
-    def sample(self):
-        """Update internal state and return it as a noise sample."""
-        x = self.state
-        dx = self.theta * (self.mu - x) + self.sigma * (np.random.rand(*x.shape)-0.5)
-        self.state = x + dx
-        return self.state

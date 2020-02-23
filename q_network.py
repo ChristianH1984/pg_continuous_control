@@ -8,7 +8,7 @@ WEIGHT_DECAY = 0.0 #0.0001
 class QNetwork(nn.Module):
 	"""Actor (Policy) Model."""
 
-	def __init__(self, state_size, action_size, layer_size1=128, layer_size2=64, lr=1e-5, seed=1337):
+	def __init__(self, input_size, layer_size1=128, layer_size2=64, lr=1e-5, seed=1337):
 		"""Initialize parameters and build model.
 		Params
 		======
@@ -19,14 +19,13 @@ class QNetwork(nn.Module):
 		super(QNetwork, self).__init__()
 		self.seed = torch.manual_seed(seed)
 		"*** YOUR CODE HERE ***"
-		self.state_size = state_size
-		self.action_size = action_size
+		self.input_size = input_size
 
 		hidden_sizes = [layer_size1, layer_size2]
 
 		# Build a feed-forward network
 		self.model = nn.Sequential(OrderedDict([
-			('fc1', nn.Linear(state_size+action_size, hidden_sizes[0])),
+			('fc1', nn.Linear(input_size, hidden_sizes[0])),
 			('relu1', nn.ReLU()),
 			('fc2', nn.Linear(hidden_sizes[0], hidden_sizes[1])),
 			('relu2', nn.ReLU()),
@@ -41,6 +40,6 @@ class QNetwork(nn.Module):
 		return self.model.forward(state)
 
 	def clone(self):
-		qnetwork_clone = QNetwork(self.state_size, self.action_size)
+		qnetwork_clone = QNetwork(self.input_size)
 		qnetwork_clone.model = copy.deepcopy(self.model)
 		return qnetwork_clone
