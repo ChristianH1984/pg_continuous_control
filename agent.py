@@ -20,7 +20,6 @@ class BaseAgent:
 			action_size (int): dimension of each action
 			seed (int): random seed
 		"""
-		# Q-Network
 		self.gamma = gamma
 		self.tau = tau
 		self.batch_size = batch_size
@@ -65,7 +64,7 @@ class BaseAgent:
 			actions = self.actor_local(state)
 		self.actor_local.train()
 		actions = actions.cpu().data.numpy()
-		actions += self.ou_noise.sample().reshape(-1, 4)
+		#actions += self.ou_noise.sample().reshape(-1, 4)
 		return np.clip(actions, -1, 1)
 
 	def learn(self, experiences):
@@ -88,6 +87,7 @@ class BaseAgent:
 		"""
 		for target_param, local_param in zip(target_model.parameters(), local_model.parameters()):
 			target_param.data.copy_(self.tau * local_param.data + (1.0 - self.tau) * target_param.data)
+
 
 class DeterministicActorCriticAgent(BaseAgent):
 	"""Interacts with and learns from the environment."""
@@ -117,6 +117,45 @@ class DeterministicActorCriticAgent(BaseAgent):
 		actions = self.actor_local(states)
 		states_actions = torch.cat((states.float(), actions.float()), 1)
 		action_error = -self.critic_local(states_actions).mean()
+		self.actor_local.optimizer.zero_grad()
+		action_error.backward()
+		self.actor_local.optimizer.step()
+
+		self.soft_update(self.critic_local, self.critic_target)
+		self.soft_update(self.actor_local, self.actor_target)
+
+	def reset(self):
+		self.ou_noise.reset()
+
+
+class StochasticActorCriticAgent(BaseAgent):
+	"""Interacts with and learns from the environment."""
+
+	def learn(self, experiences):
+		"""Update value parameters using given batch of experience tuples.
+
+		Params
+		======
+			experiences (Tuple[torch.Variable]): tuple of (s, a, r, s', done) tuples
+		"""
+		states, actions, rewards, next_states, dones = experiences
+
+		next_actions = self.actor_target(next_states)
+
+		next_states_actions = torch.cat((next_states, next_actions), 1)
+		states_actions = torch.cat((states.float(), actions.float()), 1)
+
+		y_target = 100 * rewards + self.gamma * self.critic_target(next_states_actions)*(1 - dones)
+		critic_error = 0.5*((y_target.detach() - self.critic_local(states_actions)) ** 2).mean()
+
+		self.critic_local.optimizer.zero_grad()
+		critic_error.backward()
+		torch.nn.utils.clip_grad_norm(self.critic_local.parameters(), 1)
+		self.critic_local.optimizer.step()
+
+		actions, log_probs = self.actor_local.act(states)
+		states_actions = torch.cat((states.float(), actions.float()), 1)
+		action_error = (-log_probs * self.critic_local(states_actions).detach()).mean()
 		self.actor_local.optimizer.zero_grad()
 		action_error.backward()
 		self.actor_local.optimizer.step()
