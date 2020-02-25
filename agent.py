@@ -89,7 +89,7 @@ class BaseAgent:
 		for target_param, local_param in zip(target_model.parameters(), local_model.parameters()):
 			target_param.data.copy_(self.tau * local_param.data + (1.0 - self.tau) * target_param.data)
 
-class ActorCriticAgent(BaseAgent):
+class DeterministicActorCriticAgent(BaseAgent):
 	"""Interacts with and learns from the environment."""
 
 	def learn(self, experiences):
@@ -100,15 +100,13 @@ class ActorCriticAgent(BaseAgent):
 			experiences (Tuple[torch.Variable]): tuple of (s, a, r, s', done) tuples
 		"""
 		states, actions, rewards, next_states, dones = experiences
-		#y_target = rewards + self.gamma * self.qnetwork_target(next_states).max(dim=1, keepdim=True)[0] * (1 - dones)
-		#self.qnetwork_local.optimize(self.qnetwork_local(states).gather(1, actions), y_target.detach())
 
 		next_actions = self.actor_target(next_states)
 
 		next_states_actions = torch.cat((next_states, next_actions), 1)
 		states_actions = torch.cat((states.float(), actions.float()), 1)
 
-		y_target = 100 * rewards + self.gamma * self.critic_target(next_states_actions)*(1 - dones)
+		y_target = rewards + self.gamma * self.critic_target(next_states_actions)*(1 - dones)
 		critic_error = 0.5*((y_target.detach() - self.critic_local(states_actions)) ** 2).mean()
 
 		self.critic_local.optimizer.zero_grad()
