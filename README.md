@@ -7,7 +7,7 @@ continuous action space ranging from -1 to 1. As long as the arm remains in the 
 while receiving no reward if the arm is outside the target. The task is episodic with a fixed length of 1000 timesteps and
 is considered as solved if the agent receives an average reward of 30 per episode in 100 consecutive episodes.
   
- ![Alt text](pic.png?raw=true "Title")
+ ![Alt text](reacher.png?raw=true "Title")
 
 
 ## Installation
