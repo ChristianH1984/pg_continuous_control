@@ -103,12 +103,12 @@ class ActorCriticAgent(BaseAgent):
 		#y_target = rewards + self.gamma * self.qnetwork_target(next_states).max(dim=1, keepdim=True)[0] * (1 - dones)
 		#self.qnetwork_local.optimize(self.qnetwork_local(states).gather(1, actions), y_target.detach())
 
-		next_actions = self.actor_local(next_states)
+		next_actions = self.actor_target(next_states)
 
 		next_states_actions = torch.cat((next_states, next_actions), 1)
 		states_actions = torch.cat((states.float(), actions.float()), 1)
 
-		y_target = 100 * rewards + self.gamma * self.critic_local(next_states_actions)*(1 - dones)
+		y_target = 100 * rewards + self.gamma * self.critic_target(next_states_actions)*(1 - dones)
 		critic_error = 0.5*((y_target.detach() - self.critic_local(states_actions)) ** 2).mean()
 
 		self.critic_local.optimizer.zero_grad()
