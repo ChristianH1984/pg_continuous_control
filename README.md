@@ -15,5 +15,5 @@ Clone the github repo
 - git clone https://github.com/ChristianH1984/pg_continuous_control.git
 - cd dqn_banana
 - conda env create --name pg_continuous_control --file=environment.yml
-- activate dqn_banana
+- activate pg_continuous_control
 - open Report.ipynb and have fun :-)

@@ -61,7 +61,7 @@ class PiNetworkStochastic(nn.Module):
 
     def forward(self, state):
         mu_sigma = self.forward_pass(state)
-        m = Normal(mu_sigma[:, :4], 0.5 + 0.5 * mu_sigma[:, 4:])
+        m = Normal(mu_sigma[:, :4], 0.2*(0.5 + 0.5 * mu_sigma[:, 4:]))
         actions = m.sample()
         return actions
 
@@ -69,7 +69,8 @@ class PiNetworkStochastic(nn.Module):
         return self.model.forward(state).reshape(-1, self.output_size)
 
     def clone(self):
-        pi_network_clone = PiNetworkStochastic(self.input_size, self.output_size, self.layer_size1, self.layer_size2, self.lr)
+        pi_network_clone = PiNetworkStochastic(self.input_size, self.output_size,
+                                               self.layer_size1, self.layer_size2, self.lr)
         pi_network_clone.model = copy.deepcopy(self.model)
         return pi_network_clone
 
@@ -79,5 +80,5 @@ class PiNetworkStochastic(nn.Module):
         m = Normal(mu_sigma[:, :4], 0.2*(0.5 + 0.5 * mu_sigma[:, 4:]))
         actions = m.sample()
         log_probs = m.log_prob(actions)
-        actions = actions  # .cpu().data.numpy()
+        actions = actions
         return np.clip(actions, -1, 1), log_probs.sum(dim=1).reshape(-1, 1)

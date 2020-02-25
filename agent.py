@@ -64,7 +64,7 @@ class BaseAgent:
 			actions = self.actor_local(state)
 		self.actor_local.train()
 		actions = actions.cpu().data.numpy()
-		#actions += self.ou_noise.sample().reshape(-1, 4)
+		actions += self.ou_noise.sample().reshape(-1, 4)
 		return np.clip(actions, -1, 1)
 
 	def learn(self, experiences):
@@ -106,7 +106,7 @@ class DeterministicActorCriticAgent(BaseAgent):
 		next_states_actions = torch.cat((next_states, next_actions), 1)
 		states_actions = torch.cat((states.float(), actions.float()), 1)
 
-		y_target = rewards + self.gamma * self.critic_target(next_states_actions)*(1 - dones)
+		y_target = 100 * rewards + self.gamma * self.critic_target(next_states_actions)*(1 - dones)
 		critic_error = 0.5*((y_target.detach() - self.critic_local(states_actions)) ** 2).mean()
 
 		self.critic_local.optimizer.zero_grad()

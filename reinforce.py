@@ -2,7 +2,7 @@ from collections import deque
 import numpy as np
 import torch
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
+device='cpu'
 
 def reinforce(policy, env, brain_name, n_episodes=1, print_every=100):
 
@@ -17,7 +17,7 @@ def reinforce(policy, env, brain_name, n_episodes=1, print_every=100):
 		while not done:
 			action, log_prob = policy.act(torch.from_numpy(state).float().to(device))
 			saved_log_probs.append(log_prob)
-			env_info = env.step(action)[brain_name]
+			env_info = env.step(action.cpu().data.numpy())[brain_name]
 			state = env_info.vector_observations
 			reward = env_info.rewards[0]
 			done = env_info.local_done[0]
@@ -33,8 +33,7 @@ def reinforce(policy, env, brain_name, n_episodes=1, print_every=100):
 			policy_loss.append(-log_prob * rewards_fut[i])
 		policy_loss = torch.cat(policy_loss).sum()
 
-		policy.optimizer_mu.zero_grad()
-		policy.optimizer_sigma.zero_grad()
+		policy.optimizer.zero_grad()
 		policy_loss.backward()
 
 		print('\rEpisode {}\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores[-10:])), end="")
